@@ -1,16 +1,18 @@
 {
     "version": 2,
     "builds": [
-      { "src": "pages/index.html", "use": "@vercel/static" }
+      { "src": "pages/index.html", "use": "@vercel/static" },
+      { "src": "js/*.js", "use": "@vercel/static" },
+      { "src": "assets/*.css", "use": "@vercel/static" }
     ],
     "routes": [
-      { "src": "/", "dest": "/pages/index.html" }, 
+      { "src": "/", "dest": "/pages/index.html" },
       { "src": "/waiting", "dest": "/pages/waiting.html" },
       { "src": "/game", "dest": "/pages/game.html" },
       { "src": "/results", "dest": "/pages/results.html" },
       { "src": "/final", "dest": "/pages/final.html" },
-      { "src": "/assets/(.*)", "dest": "/assets/$1" },
-      { "src": "/js/(.*)", "dest": "/js/$1" }
+      { "src": "/js/(.*)", "dest": "/js/$1" },
+      { "src": "/assets/(.*)", "dest": "/assets/$1" }
     ]
   }
   
