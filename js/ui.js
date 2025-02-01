@@ -34,7 +34,7 @@ document.getElementById("join-game").addEventListener("click", async function ()
             alert("Error joining game: " + data.error);
         }
     } catch (error) {
-        alert("Failed to join game. Please try again.");
+        alert("Failed to join game.  Please try again.");
         console.error("Join game error:", error);
     }
 });
