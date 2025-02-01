@@ -1,9 +1,9 @@
 {
     "version": 2,
     "builds": [
-      { "src": "pages/index.html", "use": "@vercel/static" },
-      { "src": "js/*.js", "use": "@vercel/static" },
-      { "src": "assets/*.css", "use": "@vercel/static" }
+      { "src": "pages/*.html", "use": "@vercel/static" },  
+      { "src": "js/*.js", "use": "@vercel/static" },        
+      { "src": "assets/*.css", "use": "@vercel/static" }    
     ],
     "routes": [
       { "src": "/", "dest": "/pages/index.html" },
@@ -15,4 +15,4 @@
       { "src": "/assets/(.*)", "dest": "/assets/$1" }
     ]
   }
-  
+}  
