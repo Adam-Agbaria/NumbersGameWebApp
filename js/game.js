@@ -59,34 +59,41 @@ document.getElementById("submit-number").addEventListener("click", submitNumber)
 
 async function submitNumber() {
     const gameId = sessionStorage.getItem("gameId");
-    const playerId = sessionStorage.getItem("playerId"); // ✅ Retrieve player_id
+    const playerId = sessionStorage.getItem("playerId");
     const playerNumber = document.getElementById("player-number").value;
 
     if (!gameId || !playerId) {
-        alert("Error: Missing game or player ID.");
+        alert("Error: Missing game ID or player ID.");
         return;
     }
 
     try {
+        const requestBody = JSON.stringify({ 
+            game_id: gameId, 
+            player_id: playerId, 
+            number: playerNumber 
+        });
+
+        console.log("Sending request:", requestBody); 
+
         const response = await fetch("https://numbers-game-server-sdk-kpah.vercel.app/round/submit", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-                game_id: gameId, 
-                player_id: playerId, // ✅ Include player_id
-                number: playerNumber 
-            })
+            headers: { 
+                "Content-Type": "application/json" 
+            },
+            body: requestBody
         });
 
         const data = await response.json();
+        console.log("Response received:", data);
 
         if (response.ok) {
             console.log("Number submitted successfully:", data.message);
             currentRound++;
             if (currentRound > totalRounds) {
-                window.location.href = "final.html";
+                window.location.href = "pages/final.html";
             } else {
-                window.location.href = "results.html";
+                window.location.href = "pages/results.html";
             }
         } else {
             alert("Error submitting number: " + data.error);
@@ -96,6 +103,7 @@ async function submitNumber() {
         alert("Failed to submit number. Please try again.");
     }
 }
+
 
 
 // Fetch final winner after the game ends
