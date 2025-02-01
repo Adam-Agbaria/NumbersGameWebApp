@@ -4,6 +4,7 @@
       { "src": "pages/index.html", "use": "@vercel/static" }
     ],
     "routes": [
+      { "src": "/", "dest": "/pages/index.html" }, 
       { "src": "/waiting", "dest": "/pages/waiting.html" },
       { "src": "/game", "dest": "/pages/game.html" },
       { "src": "/results", "dest": "/pages/results.html" },
