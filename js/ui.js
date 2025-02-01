@@ -15,7 +15,7 @@ document.getElementById("join-game").addEventListener("click", async function ()
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
             game_id: gameId,
-            player_id: playerId  
+            player_name: playerName 
          })
     });
 
