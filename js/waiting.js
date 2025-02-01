@@ -7,18 +7,29 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     document.getElementById("game-id").innerText = gameId;
+
+    checkGameStatus(gameId);
 });
 
+async function checkGameStatus(gameId) {
+    try {
+        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`);
+        const data = await response.json();
 
-async function checkGameStatus() {
-    const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`);
-    const data = await response.json();
+        if (data.status === "started") {
+            console.log("Game started! Redirecting...");
+            window.location.href = "/pages/game.html";  
+            return;
+        }
+    } catch (error) {
+        console.error("Error checking game status:", error);
+    }
 
-    if (data.status === "started") {
-        window.location.href = "game.html";
+    // **Throttle requests:**
+    // ✅ Only check if the tab is active
+    if (document.visibilityState === "visible") {
+        setTimeout(() => checkGameStatus(gameId), 5000); 
     } else {
-        setTimeout(checkGameStatus, 3000);
+        console.log("Tab is inactive. Pausing status check.");
     }
 }
-
-checkGameStatus();
