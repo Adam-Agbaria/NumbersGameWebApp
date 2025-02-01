@@ -59,11 +59,11 @@ document.getElementById("submit-number").addEventListener("click", submitNumber)
 
 async function submitNumber() {
     const gameId = sessionStorage.getItem("gameId");
+    const playerId = sessionStorage.getItem("playerId"); // ✅ Retrieve player_id
     const playerNumber = document.getElementById("player-number").value;
 
-    if (!totalRounds) {
-        console.log("Total rounds not loaded yet. Waiting...");
-        setTimeout(submitNumber, 2000); // ✅ Wait and retry
+    if (!gameId || !playerId) {
+        alert("Error: Missing game or player ID.");
         return;
     }
 
@@ -71,10 +71,17 @@ async function submitNumber() {
         const response = await fetch("https://numbers-game-server-sdk-kpah.vercel.app/round/submit", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ game_id: gameId, number: playerNumber })
+            body: JSON.stringify({ 
+                game_id: gameId, 
+                player_id: playerId, // ✅ Include player_id
+                number: playerNumber 
+            })
         });
 
+        const data = await response.json();
+
         if (response.ok) {
+            console.log("Number submitted successfully:", data.message);
             currentRound++;
             if (currentRound > totalRounds) {
                 window.location.href = "final.html";
@@ -82,13 +89,14 @@ async function submitNumber() {
                 window.location.href = "results.html";
             }
         } else {
-            alert("Error submitting number: " + (await response.json()).error);
+            alert("Error submitting number: " + data.error);
         }
     } catch (error) {
         console.error("Error submitting number:", error);
-        setTimeout(submitNumber, 2000); // ✅ Retry in case of network failure
+        alert("Failed to submit number. Please try again.");
     }
 }
+
 
 // Fetch final winner after the game ends
 async function fetchFinalWinner() {
