@@ -1,18 +1,15 @@
 {
     "version": 2,
     "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/static-build",
-        "config": { "distDir": "build" }
-      }
+      { "src": "pages/index.html", "use": "@vercel/static" }
     ],
     "routes": [
-      {
-        "src": "/(.*)",
-        "dest": "/index.html",
-        "status": 200
-      }
+      { "src": "/waiting", "dest": "/pages/waiting.html" },
+      { "src": "/game", "dest": "/pages/game.html" },
+      { "src": "/results", "dest": "/pages/results.html" },
+      { "src": "/final", "dest": "/pages/final.html" },
+      { "src": "/assets/(.*)", "dest": "/assets/$1" },
+      { "src": "/js/(.*)", "dest": "/js/$1" }
     ]
   }
   
