@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "react-scripts": "^5.0.1"
+  },
+  "scripts": {
+    "build": "react-scripts build",
+    "eject": "react-scripts eject",
+    "start": "react-scripts start",
+    "test": "react-scripts test"
+  }
+}
