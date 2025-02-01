@@ -5,7 +5,7 @@ let currentRound = 1;
 
 // Fetch total rounds from the server
 async function fetchTotalRounds() {
-    const gameId = localStorage.getItem("gameId");
+    const gameId = sessionStorage.getItem("gameId");
 
     const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/results?game_id=${gameId}`);
     const data = await response.json();
@@ -36,7 +36,7 @@ const timer = setInterval(() => {
 document.getElementById("submit-number").addEventListener("click", submitNumber);
 
 async function submitNumber() {
-    const gameId = localStorage.getItem("gameId");
+    const gameId = sessionStorage.getItem("gameId");
     const playerNumber = document.getElementById("player-number").value;
 
     const response = await fetch("https://numbers-game-server-sdk-kpah.vercel.app/round/submit", {
@@ -58,7 +58,7 @@ async function submitNumber() {
 }
 
 async function fetchFinalWinner() {
-    const gameId = localStorage.getItem("gameId");
+    const gameId = sessionStorage.getItem("gameId");
 
     const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/results?game_id=${gameId}`);
     const data = await response.json();

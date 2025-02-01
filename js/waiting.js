@@ -13,23 +13,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
 async function checkGameStatus(gameId) {
     try {
-        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`);
+        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+
         const data = await response.json();
 
         if (data.status === "started") {
             console.log("Game started! Redirecting...");
-            window.location.href = "/pages/game.html";  
+            window.location.href = "/pages/game.html";
             return;
         }
     } catch (error) {
         console.error("Error checking game status:", error);
     }
 
-    // **Throttle requests:**
-    // ✅ Only check if the tab is active
-    if (document.visibilityState === "visible") {
-        setTimeout(() => checkGameStatus(gameId), 5000); 
-    } else {
-        console.log("Tab is inactive. Pausing status check.");
-    }
+    // **Immediately check again after receiving response (long polling)**
+    setTimeout(() => checkGameStatus(gameId), 100);
 }
