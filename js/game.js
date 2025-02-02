@@ -1,7 +1,8 @@
-const TIME_LIMIT = 10; // X seconds to pick a number
+const TIME_LIMIT = 20; // 20 seconds per round
 let timeLeft = TIME_LIMIT;
 let totalRounds = 0;
 let currentRound = 1;
+let hasPicked = false;
 
 // Function to fetch total rounds (only after game ends)
 async function fetchTotalRounds() {
@@ -26,7 +27,7 @@ async function fetchTotalRounds() {
     }
 }
 
-// Call `fetchTotalRounds()` only after game ends
+// ✅ Call fetchTotalRounds() only after game ends
 document.addEventListener("DOMContentLoaded", () => {
     const gameId = sessionStorage.getItem("gameId");
 
@@ -41,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startCountdown();
 });
 
-// Function to start the countdown timer
+// ✅ Function to start the countdown timer
 function startCountdown() {
     const timer = setInterval(() => {
         timeLeft--;
@@ -49,18 +50,29 @@ function startCountdown() {
 
         if (timeLeft === 0) {
             clearInterval(timer);
-            submitNumber();
+
+            // If player hasn't picked, auto-select 5
+            if (!hasPicked) {
+                document.getElementById("player-number").value = 5;
+                submitNumber(5);
+            }
         }
     }, 1000);
 }
 
-// Submit number to backend
-document.getElementById("submit-number").addEventListener("click", submitNumber);
+// ✅ Submit number to backend and show confirmation
+document.getElementById("submit-number").addEventListener("click", () => {
+    const playerNumber = document.getElementById("player-number").value;
+    if (playerNumber !== "") {
+        submitNumber(playerNumber);
+    } else {
+        alert("Please pick a number between 0-100.");
+    }
+});
 
-async function submitNumber() {
+async function submitNumber(playerNumber) {
     const gameId = sessionStorage.getItem("gameId");
     const playerId = sessionStorage.getItem("playerId");
-    const playerNumber = document.getElementById("player-number").value;
 
     if (!gameId || !playerId) {
         alert("Error: Missing game ID or player ID.");
@@ -74,13 +86,11 @@ async function submitNumber() {
             number: playerNumber 
         });
 
-        console.log("Sending request:", requestBody); 
+        console.log("Sending request:", requestBody);
 
         const response = await fetch("https://numbers-game-server-sdk-kpah.vercel.app/round/submit", {
             method: "POST",
-            headers: { 
-                "Content-Type": "application/json" 
-            },
+            headers: { "Content-Type": "application/json" },
             body: requestBody
         });
 
@@ -88,13 +98,20 @@ async function submitNumber() {
         console.log("Response received:", data);
 
         if (response.ok) {
-            console.log("Number submitted successfully:", data.message);
-            currentRound++;
-            if (currentRound > totalRounds) {
-                window.location.href = "/pages/final.html";
-            } else {
-                window.location.href = "/pages/results.html";
-            }
+            console.log(`Number ${playerNumber} submitted successfully`);
+            hasPicked = true;
+
+            // Disable input and button
+            document.getElementById("player-number").disabled = true;
+            document.getElementById("submit-number").disabled = true;
+
+            // Show selection confirmation
+            document.querySelector(".container").innerHTML += `
+                <p class="selected-message">You selected: <strong>${playerNumber}</strong>. Waiting for the round to finish...</p>
+            `;
+
+            // Wait for the round to end
+            waitForRoundEnd();
         } else {
             alert("Error submitting number: " + data.error);
         }
@@ -104,41 +121,31 @@ async function submitNumber() {
     }
 }
 
-
-
-// Fetch final winner after the game ends
-async function fetchFinalWinner() {
+// ✅ Wait for round to end before showing results
+async function waitForRoundEnd() {
     const gameId = sessionStorage.getItem("gameId");
 
     try {
-        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/results?game_id=${gameId}`);
+        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+
         const data = await response.json();
 
-        if (!response.ok || data.error === "Game is still in progress") {
-            console.log("Game is still running, waiting for results...");
-            setTimeout(fetchFinalWinner, 5000); // ✅ Retry every 5 seconds
+        if (data.status === "round_finished") {
+            console.log("Round finished! Redirecting to results...");
+            window.location.href = "/pages/results.html";
+            return;
+        } else if (data.status === "finished") {
+            console.log("Game finished! Redirecting to final results...");
+            window.location.href = "/pages/final.html";
             return;
         }
-
-        const roundResults = data.round_results;
-        const winCount = {};
-
-        for (const round in roundResults) {
-            const winner = roundResults[round].winner;
-            winCount[winner] = (winCount[winner] || 0) + 1;
-        }
-
-        let finalWinner = Object.keys(winCount).reduce((a, b) => (winCount[a] > winCount[b] ? a : b));
-
-        document.getElementById("winner-message").innerText = `🏆 The overall winner is Player ${finalWinner} with ${winCount[finalWinner]} rounds won! 🎉`;
-
     } catch (error) {
-        console.error("Error fetching final results:", error);
-        setTimeout(fetchFinalWinner, 5000); // ✅ Retry in case of network issues
+        console.error("Error checking game status:", error);
     }
-}
 
-// ✅ Run this only if we're on final.html
-if (document.getElementById("winner-message")) {
-    fetchFinalWinner();
+    // ✅ Retry every 5 seconds until round ends
+    setTimeout(waitForRoundEnd, 5000);
 }
