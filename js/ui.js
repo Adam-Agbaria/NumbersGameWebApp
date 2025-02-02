@@ -25,7 +25,7 @@ document.getElementById("join-game").addEventListener("click", async function ()
             sessionStorage.setItem("playerId", data.player_id); // ✅ Use server-generated ID
             sessionStorage.setItem("playerName", playerName);
 
-            window.location.href = "/waiting.html";
+            window.location.href = "/pages/waiting.html";
         } else {
             alert("Error joining game: " + (data.error || "Unknown error"));
         }

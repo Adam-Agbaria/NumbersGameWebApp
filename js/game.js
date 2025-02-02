@@ -91,9 +91,9 @@ async function submitNumber() {
             console.log("Number submitted successfully:", data.message);
             currentRound++;
             if (currentRound > totalRounds) {
-                window.location.href = "pages/final.html";
+                window.location.href = "/pages/final.html";
             } else {
-                window.location.href = "pages/results.html";
+                window.location.href = "/pages/results.html";
             }
         } else {
             alert("Error submitting number: " + data.error);
