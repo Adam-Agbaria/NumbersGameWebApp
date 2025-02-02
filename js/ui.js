@@ -7,9 +7,6 @@ document.getElementById("join-game").addEventListener("click", async function ()
         return;
     }
 
-    // Generate a unique player ID (random 6-character string)
-    const playerId = Math.random().toString(36).substr(2, 6);
-
     try {
         const response = await fetch("https://numbers-game-server-sdk-kpah.vercel.app/game/join", {
             method: "POST",
@@ -21,20 +18,19 @@ document.getElementById("join-game").addEventListener("click", async function ()
         });
 
         const data = await response.json();
+        console.log("Join response:", data); // ✅ Debugging
 
-        if (response.ok) {
-            // ✅ Use sessionStorage to store session-specific data
+        if (response.ok && data.player_id) {
             sessionStorage.setItem("gameId", gameId);
-            sessionStorage.setItem("playerId", playerId);
+            sessionStorage.setItem("playerId", data.player_id); // ✅ Use server-generated ID
             sessionStorage.setItem("playerName", playerName);
 
-            // ✅ Redirect to waiting screen
             window.location.href = "/pages/waiting.html";
         } else {
-            alert("Error joining game: " + data.error);
+            alert("Error joining game: " + (data.error || "Unknown error"));
         }
     } catch (error) {
-        alert("Failed to join game.  Please try again.");
+        alert("Failed to join game. Please try again.");
         console.error("Join game error:", error);
     }
 });
