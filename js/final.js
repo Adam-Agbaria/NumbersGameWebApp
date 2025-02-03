@@ -33,6 +33,8 @@ async function fetchFinalWinner() {
             return;
         }
 
+        const players = data.players || {};
+
         // ✅ Count how many rounds each player won
         const winCount = {};
         for (const roundKey in data.round_results) {
@@ -47,8 +49,9 @@ async function fetchFinalWinner() {
 
         let resultHtml = "<h2>🏆 Final Standings</h2><ul>";
         sortedWinners.forEach(([playerId, wins], index) => {
+            const playerName = players[playerId]?.name || `Unknown Player (${playerId})`; 
             const rank = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
-            resultHtml += `<li>${rank} <strong>Player ${playerId}</strong>: ${wins} round(s) won</li>`;
+            resultHtml += `<li>${rank} <strong>${playerName}</strong>: ${wins} round(s) won</li>`;
         });
         resultHtml += "</ul>";
 
