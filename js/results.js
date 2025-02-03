@@ -45,15 +45,18 @@ async function fetchRoundResults() {
         const winningNumber = roundResults.winning_number !== undefined ? roundResults.winning_number : "N/A";
         const chosenNumber = roundResults.chosen_number || "N/A";
 
-        // ✅ Fix: Get winner's picked number from `players`
+        // ✅ FIX: Ensure `data.players` and `data.players[winnerId]` exist before accessing
         let winnerPicked = "N/A";
-        if (data.players && data.players[winnerId]) {
+        let winnerName = "Unknown";
+
+        if (data.players && winnerId in data.players) {  // 🔥 Fix: Properly check if player exists
             winnerPicked = data.players[winnerId].number || "N/A";
+            winnerName = data.players[winnerId].name || "Unknown";
         }
 
         document.getElementById("results").innerHTML = `
             <h2>${latestRoundKey} Results</h2>
-            <p>🏆 <strong>Winner:</strong> Player ${winnerId} (${data.players[winnerId]?.name || "Unknown"})</p>
+            <p>🏆 <strong>Winner:</strong> Player ${winnerId} (${winnerName})</p>
             <p>🎯 <strong>Winning Number:</strong> ${winningNumber}</p>
             <p>🔢 <strong>Winner's Pick:</strong> ${winnerPicked}</p>
         `;
