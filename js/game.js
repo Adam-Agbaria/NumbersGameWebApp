@@ -57,7 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     fetchTotalRounds();
-    startCountdown();
+    //startCountdown();
 });
 
 
@@ -190,17 +190,30 @@ async function waitForRoundEnd() {
 // ✅ Run this function when results page loads
 
 
-document.addEventListener("DOMContentLoaded", fetchFinalWinner);
+document.addEventListener("DOMContentLoaded", function () {
+    if (document.getElementById("winner-message")) {
+        fetchFinalWinner();
+    }
+});
 
 async function fetchFinalWinner() {
     const gameId = sessionStorage.getItem("gameId");
+    const winnerElement = document.getElementById("winner-message");
+
+    if (!winnerElement) {
+        console.error("❌ Error: Element with ID 'winner-message' not found in DOM.");
+        return;
+    }
 
     if (!gameId) {
-        document.getElementById("winner-message").innerHTML = "<p>Error: No game found.</p>";
+        winnerElement.innerHTML = "<p>Error: No game found.</p>";
         return;
     }
 
     try {
+
+
+        
         const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/results?game_id=${gameId}`);
         const data = await response.json();
 
