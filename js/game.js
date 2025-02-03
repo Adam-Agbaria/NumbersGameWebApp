@@ -214,3 +214,35 @@ async function fetchFinalWinner() {
         document.getElementById("winner-message").innerHTML = "<p>Error loading results. Please try again.</p>";
     }
 }
+
+async function waitForRoundEnd() {
+    const gameId = sessionStorage.getItem("gameId");
+
+    try {
+        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" }
+        });
+
+        const data = await response.json();
+
+        if (data.status === "round_finished") {
+            console.log("Round finished! Waiting 15s for results...");
+            setTimeout(() => {
+                window.location.href = "/pages/results.html";
+            }, 15000);
+            return;
+        } else if (data.status === "finished") {
+            console.log("Game finished! Redirecting to final results...");
+            setTimeout(() => {
+                window.location.href = "/pages/final.html";
+            }, 15000);
+            return;
+        }
+    } catch (error) {
+        console.error("Error checking game status:", error);
+    }
+
+    // ✅ Retry every 5 seconds until round ends
+    setTimeout(waitForRoundEnd, 5000);
+}
