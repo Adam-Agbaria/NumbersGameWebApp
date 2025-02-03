@@ -22,24 +22,31 @@ async function waitForGameStart() {
             return;
         }
 
-        if (data.status === "started") {
-            console.log("🚀 Game has started!");
+        // ✅ Get the current page URL
+        const currentPage = window.location.pathname;
+
+        if (data.status === "started" && !currentPage.includes("game.html")) {
+            console.log("🚀 Game has started! Redirecting...");
+            sessionStorage.setItem("lastRedirect", "game");
             window.location.href = "/pages/game.html"; // ✅ Redirect to game page
-        } else if (data.status === "round_finished" || data.status === "round_ended") {
+        } else if ((data.status === "round_finished" || data.status === "round_ended") && !currentPage.includes("results.html")) {
             console.log("🎉 Round finished! Redirecting to results...");
-            window.location.href = "/pages/results.html";
-        } else if (data.status === "finished") {
+            sessionStorage.setItem("lastRedirect", "results");
+            window.location.href = "/pages/results.html"; // ✅ Redirect only if not already here
+        } else if (data.status === "finished" && !currentPage.includes("final.html")) {
             console.log("🏆 Game finished! Redirecting to final results...");
-            window.location.href = "/pages/final.html";
+            sessionStorage.setItem("lastRedirect", "final");
+            window.location.href = "/pages/final.html"; // ✅ Redirect only if not already here
         } else {
             console.log("⏳ Game not started yet. Checking again in 4s...");
-            setTimeout(waitForGameStart, 4000);
+            setTimeout(waitForGameStart, 4000); // ✅ Keep checking, but no redirect
         }
     } catch (error) {
         console.error("❌ Network error or timeout:", error);
         setTimeout(waitForGameStart, 4000);
     }
 }
+
 
 async function fetchRoundResults() {
     const gameId = sessionStorage.getItem("gameId");
