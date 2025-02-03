@@ -264,18 +264,23 @@ async function waitForRoundEnd() {
     }
 
     try {
+
         const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
 
+
+
         const data = await response.json();
         console.log("Game Status Response:", data);
-
+        
+        /*
         if (!data || !data.status) {
             console.error("❌ Error: Invalid response format from server.");
             return;
         }
+            */
 
         if (data.status === "round_finished") {
             console.log("🎉 Round finished! Redirecting to results...");
