@@ -12,31 +12,48 @@ async function fetchRoundResults() {
         const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/results?game_id=${gameId}`);
         const data = await response.json();
 
+        console.log("📡 API Response:", data); // 🔥 Debugging: See full data
+
         if (!response.ok) {
             throw new Error(data.error || "Failed to fetch round results");
         }
 
-        const currentRound = data.current_round - 1; // Get the last round
-        const roundResults = data.round_results[`Round ${currentRound}`];
-
-        if (!roundResults) {
+        if (!data.round_results || Object.keys(data.round_results).length === 0) {
+            console.warn("⚠️ No round results found.");
             document.getElementById("results").innerHTML = "<p>No results available yet.</p>";
             return;
         }
 
-        // ✅ Ensure winnerId exists before accessing
+        // 🔥 Fix: Extract latest round from the keys like "Round 1", "Round 2"
+        const roundKeys = Object.keys(data.round_results).sort((a, b) => {
+            return parseInt(b.replace("Round ", "")) - parseInt(a.replace("Round ", ""));
+        });
+
+        const latestRoundKey = roundKeys[0]; // ✅ Get the highest round (e.g., "Round 1")
+
+        console.log(`✅ Latest round detected: ${latestRoundKey}`);
+
+        const roundResults = data.round_results[latestRoundKey];
+
+        if (!roundResults) {
+            console.warn(`⚠️ No data found for ${latestRoundKey}.`);
+            document.getElementById("results").innerHTML = "<p>No results available yet.</p>";
+            return;
+        }
+
         const winnerId = roundResults.winner || "Unknown";
-        const winningNumber = roundResults.average ? roundResults.average.toFixed(2) : "N/A";
-        
-        // ✅ Handle case where `players` may be missing
+        const winningNumber = roundResults.winning_number !== undefined ? roundResults.winning_number : "N/A";
+        const chosenNumber = roundResults.chosen_number || "N/A";
+
+        // ✅ Fix: Get winner's picked number from `players`
         let winnerPicked = "N/A";
         if (data.players && data.players[winnerId]) {
             winnerPicked = data.players[winnerId].number || "N/A";
         }
 
         document.getElementById("results").innerHTML = `
-            <h2>Round ${currentRound} Results</h2>
-            <p>🏆 <strong>Winner:</strong> Player ${winnerId}</p>
+            <h2>${latestRoundKey} Results</h2>
+            <p>🏆 <strong>Winner:</strong> Player ${winnerId} (${data.players[winnerId]?.name || "Unknown"})</p>
             <p>🎯 <strong>Winning Number:</strong> ${winningNumber}</p>
             <p>🔢 <strong>Winner's Pick:</strong> ${winnerPicked}</p>
         `;
