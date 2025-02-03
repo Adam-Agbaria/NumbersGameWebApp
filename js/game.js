@@ -145,69 +145,7 @@ async function submitNumber(playerNumber) {
     }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    if (document.getElementById("winner-message")) {
-        fetchFinalWinner();
-    }
-});
 
-async function fetchFinalWinner() {
-    const gameId = sessionStorage.getItem("gameId");
-    const winnerElement = document.getElementById("winner-message");
-
-    if (!winnerElement) {
-        console.error("❌ Error: Element with ID 'winner-message' not found in DOM.");
-        return;
-    }
-
-    if (!gameId) {
-        winnerElement.innerHTML = "<p>Error: No game found.</p>";
-        return;
-    }
-
-    try {
-
-
-        
-        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/results?game_id=${gameId}`);
-        const data = await response.json();
-
-        if (!response.ok) {
-            throw new Error(data.error || "Failed to fetch final results");
-        }
-
-        const roundResults = data.round_results;
-
-        if (!roundResults || Object.keys(roundResults).length === 0) {
-            document.getElementById("winner-message").innerHTML = "<p>No game results available.</p>";
-            return;
-        }
-
-        // ✅ Count how many rounds each player won
-        const winCount = {};
-        for (const round in roundResults) {
-            const winner = roundResults[round].winner;
-            if (winner) {
-                winCount[winner] = (winCount[winner] || 0) + 1;
-            }
-        }
-
-        // ✅ Sort players by most rounds won
-        const sortedWinners = Object.entries(winCount).sort((a, b) => b[1] - a[1]);
-
-        let resultHtml = "<h2>🏆 Final Standings</h2><ul>";
-        sortedWinners.forEach(([playerId, wins]) => {
-            resultHtml += `<li><strong>Player ${playerId}</strong>: ${wins} round(s) won</li>`;
-        });
-        resultHtml += "</ul>";
-
-        document.getElementById("winner-message").innerHTML = resultHtml;
-
-    } catch (error) {
-        console.error("❌ Error fetching final results:", error);
-        document.getElementById("winner-message").innerHTML = "<p>Error loading results. Please try again.</p>";
-    }
-}
 
 async function waitForRoundEnd() {
     const gameId = sessionStorage.getItem("gameId");
