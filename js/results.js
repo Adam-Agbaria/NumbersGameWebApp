@@ -16,7 +16,7 @@ async function fetchRoundResults() {
             throw new Error(data.error || "Failed to fetch round results");
         }
 
-        const currentRound = data.current_round - 1; // Previous round
+        const currentRound = data.current_round - 1; // Get the last round
         const roundResults = data.round_results[`Round ${currentRound}`];
 
         if (!roundResults) {
@@ -24,9 +24,15 @@ async function fetchRoundResults() {
             return;
         }
 
-        const winnerId = roundResults.winner;
-        const winningNumber = roundResults.average.toFixed(2);
-        const winnerPicked = data.players[winnerId].number;
+        // ✅ Ensure winnerId exists before accessing
+        const winnerId = roundResults.winner || "Unknown";
+        const winningNumber = roundResults.average ? roundResults.average.toFixed(2) : "N/A";
+        
+        // ✅ Handle case where `players` may be missing
+        let winnerPicked = "N/A";
+        if (data.players && data.players[winnerId]) {
+            winnerPicked = data.players[winnerId].number || "N/A";
+        }
 
         document.getElementById("results").innerHTML = `
             <h2>Round ${currentRound} Results</h2>
@@ -36,7 +42,7 @@ async function fetchRoundResults() {
         `;
 
     } catch (error) {
-        console.error("Error fetching round results:", error);
+        console.error("❌ Error fetching round results:", error);
         document.getElementById("results").innerHTML = "<p>Error loading results. Please try again.</p>";
     }
 }
