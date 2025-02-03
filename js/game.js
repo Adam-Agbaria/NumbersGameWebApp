@@ -151,7 +151,17 @@ async function waitForNextRound() {
 }
 
 // ✅ Run this function when results page loads
-document.addEventListener("DOMContentLoaded", waitForNextRound);
+document.addEventListener("DOMContentLoaded", () => {
+    const page = window.location.pathname;
+
+    if (page.includes("results.html")) {
+        console.log("📢 On results page. Waiting for next round...");
+        waitForNextRound();
+    } else if (page.includes("final.html")) {
+        console.log("📢 On final page. Fetching final winner...");
+        fetchFinalWinner();
+    }
+});
 
 
 document.addEventListener("DOMContentLoaded", fetchFinalWinner);
