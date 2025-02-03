@@ -11,27 +11,35 @@ document.addEventListener("DOMContentLoaded", () => {
     checkGameStatus(gameId);
 });
 
-async function checkGameStatus(gameId) {
-    try {
-        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
+async function checkGameStatus() {
+    const gameId = sessionStorage.getItem("gameId");
 
+    try {
+        const response = await fetch(`/game/status/${gameId}`);
         const data = await response.json();
 
-        if (data.status === "started") {
-            console.log("Game started! Redirecting...");
-            window.location.href = "/pages/game.html";
-            return;
+        if (response.ok) {
+            console.log("✅ Game status:", data.status);
+
+            if (data.status === "finished") {
+                window.location.href = "/pages/final.html";
+            } else if (data.status === "round_finished") {
+                window.location.href = "/pages/results.html";
+            } else {
+                setTimeout(checkGameStatus, 4000); // 🔄 Retry after 4s
+            }
+        } else {
+            console.error("❌ Error checking game status:", data.error);
+            setTimeout(checkGameStatus, 4000); // 🔄 Retry after 4s
         }
     } catch (error) {
-        console.error("Error checking game status:", error);
+        console.error("❌ Network error:", error);
+        setTimeout(checkGameStatus, 4000); // 🔄 Retry after 4s
     }
-
-    // **Immediately check again after receiving response (long polling)**
-    setTimeout(() => checkGameStatus(gameId), 100);
 }
+
+document.addEventListener("DOMContentLoaded", checkGameStatus);
+
 
 document.addEventListener("DOMContentLoaded", () => {
     const gameId = sessionStorage.getItem("gameId");
@@ -45,34 +53,3 @@ document.addEventListener("DOMContentLoaded", () => {
     waitForRoundEnd(gameId);
 });
 
-async function waitForRoundEnd() {
-    const gameId = sessionStorage.getItem("gameId");
-
-    try {
-        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
-
-        const data = await response.json();
-
-        if (data.status === "round_finished") {
-            console.log("Round finished! Waiting 15s for results...");
-            setTimeout(() => {
-                window.location.href = "/pages/results.html";
-            }, 15000);
-            return;
-        } else if (data.status === "finished") {
-            console.log("Game finished! Redirecting to final results...");
-            setTimeout(() => {
-                window.location.href = "/pages/final.html";
-            }, 15000);
-            return;
-        }
-    } catch (error) {
-        console.error("Error checking game status:", error);
-    }
-
-    // ✅ Retry every 5 seconds until round ends
-    setTimeout(waitForRoundEnd, 5000);
-}
