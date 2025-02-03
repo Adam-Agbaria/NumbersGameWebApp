@@ -52,8 +52,6 @@ document.addEventListener("DOMContentLoaded", () => {
             <p class="selected-message">You selected: <strong>${playerNumber}</strong>. Waiting for the round to finish...</p>
         `;
 
-        // Start waiting for the round to end
-        waitForRoundEnd();
     }
 
     fetchTotalRounds();
@@ -254,7 +252,6 @@ async function fetchFinalWinner() {
     }
 }
 
-// ✅ Ensure this function is present
 async function waitForRoundEnd() {
     const gameId = sessionStorage.getItem("gameId");
 
@@ -264,38 +261,37 @@ async function waitForRoundEnd() {
     }
 
     try {
-
         const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" }
         });
 
-
-
-        const data = await response.json();
-        console.log("Game Status Response:", data);
-        
-        /*
-        if (!data || !data.status) {
-            console.error("❌ Error: Invalid response format from server.");
+        if (!response.ok) {
+            console.warn(`⚠️ Server returned error ${response.status}. Retrying in 4s...`);
+            setTimeout(waitForRoundEnd, 4000); // 🔄 Retry every 4 seconds
             return;
         }
-            */
+
+        const data = await response.json();
+        console.log("📡 Game Status Response:", data);
 
         if (data.status === "round_finished") {
             console.log("🎉 Round finished! Redirecting to results...");
-            window.location.href = "/pages/results.html";
+            window.location.href = "/pages/results.html"; // ✅ Redirect to results
         } else if (data.status === "finished") {
             console.log("🏆 Game finished! Redirecting to final results...");
-            window.location.href = "/pages/final.html";
+            window.location.href = "/pages/final.html"; // ✅ Redirect to final standings
         } else {
             console.log("⏳ Round not finished yet. Checking again in 4s...");
             setTimeout(waitForRoundEnd, 4000); // 🔄 Retry every 4 seconds
         }
     } catch (error) {
-        console.error("❌ Error checking game status:", error);
-        setTimeout(waitForRoundEnd, 4000); // 🔄 Retry in case of error
+        console.error("❌ Network error or timeout:", error);
+        setTimeout(waitForRoundEnd, 4000); // 🔄 Retry in case of network issues
     }
 }
 
-
+// ✅ Start checking status automatically when the page loads
+document.addEventListener("DOMContentLoaded", () => {
+    waitForRoundEnd();
+});
