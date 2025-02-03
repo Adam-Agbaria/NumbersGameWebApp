@@ -123,6 +123,7 @@ async function submitNumber(playerNumber) {
             // ✅ Save in sessionStorage to prevent re-picking after refresh
             sessionStorage.setItem("hasPicked", "true");
             sessionStorage.setItem("playerNumber", playerNumber);
+            sessionStorage.setItem("lastRound", data.current_round);
 
             // Disable input and button
             document.getElementById("player-number").disabled = true;
@@ -231,13 +232,20 @@ async function waitForRoundEnd() {
         const data = await response.json();
         console.log("📡 Game Status Response:", data);
 
-        // 🔥 FIX: Check if status is "round_ended" as well
+        // ✅ Check if we started a new round
+        if (data.current_round > sessionStorage.getItem("lastRound")) {
+            console.log("🔄 New round detected! Resetting selection.");
+            sessionStorage.removeItem("hasPicked"); // ✅ Reset selection
+            sessionStorage.removeItem("playerNumber"); // ✅ Clear old selection
+            sessionStorage.setItem("lastRound", data.current_round); // ✅ Save the new round number
+        }
+
         if (data.status === "round_finished" || data.status === "round_ended") {
             console.log("🎉 Round finished! Redirecting to results...");
-            window.location.href = "/pages/results.html"; // ✅ Redirect to results
+            window.location.href = "/pages/results.html";
         } else if (data.status === "finished") {
             console.log("🏆 Game finished! Redirecting to final results...");
-            window.location.href = "/pages/final.html"; // ✅ Redirect to final standings
+            window.location.href = "/pages/final.html";
         } else {
             console.log("⏳ Round not finished yet. Checking again in 4s...");
             setTimeout(waitForRoundEnd, 4000);
