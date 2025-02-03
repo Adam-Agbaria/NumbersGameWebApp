@@ -121,8 +121,7 @@ async function submitNumber(playerNumber) {
     }
 }
 
-// ✅ Wait for round to end before showing results
-async function waitForRoundEnd() {
+async function waitForNextRound() {
     const gameId = sessionStorage.getItem("gameId");
 
     try {
@@ -132,20 +131,26 @@ async function waitForRoundEnd() {
         });
 
         const data = await response.json();
+        console.log("Game Status Response:", data);
 
-        if (data.status === "round_finished") {
-            console.log("Round finished! Redirecting to results...");
-            window.location.href = "/pages/results.html";
+        if (data.status === "started") {
+            console.log("🚀 Next round started! Redirecting to game...");
+            window.location.href = "/pages/game.html";
             return;
         } else if (data.status === "finished") {
-            console.log("Game finished! Redirecting to final results...");
+            console.log("🏆 Game finished! Redirecting to final results...");
             window.location.href = "/pages/final.html";
             return;
         }
     } catch (error) {
-        console.error("Error checking game status:", error);
+        console.error("❌ Error checking game status:", error);
     }
 
-    // ✅ Retry every 5 seconds until round ends
-    setTimeout(waitForRoundEnd, 5000);
+    // 🔄 Retry every 5 seconds if the next round hasn't started yet
+    setTimeout(waitForNextRound, 5000);
 }
+
+// ✅ Run this function when results page loads
+document.addEventListener("DOMContentLoaded", waitForNextRound);
+
+
