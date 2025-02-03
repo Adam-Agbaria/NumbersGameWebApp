@@ -1,4 +1,45 @@
-document.addEventListener("DOMContentLoaded", fetchRoundResults);
+document.addEventListener("DOMContentLoaded", function () {
+    waitForGameStart();  
+    fetchRoundResults(); 
+});
+async function waitForGameStart() {
+    const gameId = sessionStorage.getItem("gameId");
+
+    if (!gameId) {
+        console.error("🚨 Error: No game ID found in session.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`);
+        const data = await response.json();
+
+        console.log("📡 Game Status Response:", data);
+
+        if (!response.ok) {
+            console.warn(`⚠️ Server error ${response.status}. Retrying in 4s...`);
+            setTimeout(waitForGameStart, 4000);
+            return;
+        }
+
+        if (data.status === "started") {
+            console.log("🚀 Game has started!");
+            window.location.href = "/pages/game.html"; // ✅ Redirect to game page
+        } else if (data.status === "round_finished" || data.status === "round_ended") {
+            console.log("🎉 Round finished! Redirecting to results...");
+            window.location.href = "/pages/results.html";
+        } else if (data.status === "finished") {
+            console.log("🏆 Game finished! Redirecting to final results...");
+            window.location.href = "/pages/final.html";
+        } else {
+            console.log("⏳ Game not started yet. Checking again in 4s...");
+            setTimeout(waitForGameStart, 4000);
+        }
+    } catch (error) {
+        console.error("❌ Network error or timeout:", error);
+        setTimeout(waitForGameStart, 4000);
+    }
+}
 
 async function fetchRoundResults() {
     const gameId = sessionStorage.getItem("gameId");
@@ -56,7 +97,7 @@ async function fetchRoundResults() {
 
         document.getElementById("results").innerHTML = `
             <h2>${latestRoundKey} Results</h2>
-            <p>🏆 <strong>Winner:</strong> Player ${winnerId} (${winnerName})</p>
+            <p>🏆 <strong>Winner:</strong> Player ${winnerName} (${winnerId})</p>
             <p>🎯 <strong>Winning Number:</strong> ${winningNumber}</p>
             <p>🔢 <strong>Winner's Pick:</strong> ${winnerPicked}</p>
         `;
