@@ -1,5 +1,5 @@
-const TIME_LIMIT = 20; // 20 seconds per round
-let timeLeft = TIME_LIMIT;
+//const TIME_LIMIT = 20; // 20 seconds per round
+//let timeLeft = TIME_LIMIT;
 let totalRounds = 0;
 let currentRound = 1;
 let hasPicked = false;
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
     }
 
-    document.getElementById("time-left").innerText = timeLeft;
+    //document.getElementById("time-left").innerText = timeLeft;
 
     // ✅ Restore picked number if already submitted
     if (sessionStorage.getItem("hasPicked") === "true") {
@@ -62,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 // ✅ Function to start the countdown timer
+/*
 function startCountdown() {
     const timer = setInterval(() => {
         timeLeft--;
@@ -78,6 +79,7 @@ function startCountdown() {
         }
     }, 1000);
 }
+*/
 
 // ✅ Submit number to backend and show confirmation
 document.getElementById("submit-number").addEventListener("click", () => {
@@ -145,8 +147,13 @@ async function submitNumber(playerNumber) {
 }
 
 
-async function waitForNextRound() {
+async function waitForRoundEnd() {
     const gameId = sessionStorage.getItem("gameId");
+
+    if (!gameId) {
+        console.error("🚨 Error: No game ID found in session.");
+        return;
+    }
 
     try {
         const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
@@ -154,38 +161,33 @@ async function waitForNextRound() {
             headers: { "Content-Type": "application/json" }
         });
 
-        const data = await response.json();
-        console.log("Game Status Response:", data);
-
-        if (data.status === "started") {
-            console.log("🚀 Next round started! Redirecting to game...");
-            window.location.href = "/pages/game.html";
+        if (!response.ok) {
+            console.warn("⚠️ Server returned error. Retrying in 4s...");
+            setTimeout(waitForRoundEnd, 4000);
             return;
+        }
+
+        const data = await response.json();
+        console.log("📡 Game Status:", data);
+
+        if (data.status === "round_finished") {
+            console.log("🎉 Round finished! Redirecting to results...");
+            window.location.href = "/pages/results.html";
         } else if (data.status === "finished") {
             console.log("🏆 Game finished! Redirecting to final results...");
             window.location.href = "/pages/final.html";
-            return;
+        } else {
+            console.log("⏳ Waiting for round to finish... Checking again in 4s");
+            setTimeout(waitForRoundEnd, 4000);
         }
     } catch (error) {
-        console.error("❌ Error checking game status:", error);
+        console.error("❌ Network error or timeout:", error);
+        setTimeout(waitForRoundEnd, 4000);
     }
-
-    // 🔄 Retry every 5 seconds if the next round hasn't started yet
-    setTimeout(waitForNextRound, 5000);
 }
 
-// ✅ Run this function when results page loads
-document.addEventListener("DOMContentLoaded", () => {
-    const page = window.location.pathname;
 
-    if (page.includes("results.html")) {
-        console.log("📢 On results page. Waiting for next round...");
-        waitForNextRound();
-    } else if (page.includes("final.html")) {
-        console.log("📢 On final page. Fetching final winner...");
-        fetchFinalWinner();
-    }
-});
+// ✅ Run this function when results page loads
 
 
 document.addEventListener("DOMContentLoaded", fetchFinalWinner);
