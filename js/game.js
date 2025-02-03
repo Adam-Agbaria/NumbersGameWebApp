@@ -144,50 +144,6 @@ async function submitNumber(playerNumber) {
     }
 }
 
-
-async function waitForRoundEnd() {
-    const gameId = sessionStorage.getItem("gameId");
-
-    if (!gameId) {
-        console.error("🚨 Error: No game ID found in session.");
-        return;
-    }
-
-    try {
-        const response = await fetch(`https://numbers-game-server-sdk-kpah.vercel.app/game/status/${gameId}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" }
-        });
-
-        if (!response.ok) {
-            console.warn("⚠️ Server returned error. Retrying in 4s...");
-            setTimeout(waitForRoundEnd, 4000);
-            return;
-        }
-
-        const data = await response.json();
-        console.log("📡 Game Status:", data);
-
-        if (data.status === "round_finished") {
-            console.log("🎉 Round finished! Redirecting to results...");
-            window.location.href = "/pages/results.html";
-        } else if (data.status === "finished") {
-            console.log("🏆 Game finished! Redirecting to final results...");
-            window.location.href = "/pages/final.html";
-        } else {
-            console.log("⏳ Waiting for round to finish... Checking again in 4s");
-            setTimeout(waitForRoundEnd, 4000);
-        }
-    } catch (error) {
-        console.error("❌ Network error or timeout:", error);
-        setTimeout(waitForRoundEnd, 4000);
-    }
-}
-
-
-// ✅ Run this function when results page loads
-
-
 document.addEventListener("DOMContentLoaded", function () {
     if (document.getElementById("winner-message")) {
         fetchFinalWinner();
@@ -268,14 +224,15 @@ async function waitForRoundEnd() {
 
         if (!response.ok) {
             console.warn(`⚠️ Server returned error ${response.status}. Retrying in 4s...`);
-            setTimeout(waitForRoundEnd, 4000); // 🔄 Retry every 4 seconds
+            setTimeout(waitForRoundEnd, 4000);
             return;
         }
 
         const data = await response.json();
         console.log("📡 Game Status Response:", data);
 
-        if (data.status === "round_finished") {
+        // 🔥 FIX: Check if status is "round_ended" as well
+        if (data.status === "round_finished" || data.status === "round_ended") {
             console.log("🎉 Round finished! Redirecting to results...");
             window.location.href = "/pages/results.html"; // ✅ Redirect to results
         } else if (data.status === "finished") {
@@ -283,11 +240,11 @@ async function waitForRoundEnd() {
             window.location.href = "/pages/final.html"; // ✅ Redirect to final standings
         } else {
             console.log("⏳ Round not finished yet. Checking again in 4s...");
-            setTimeout(waitForRoundEnd, 4000); // 🔄 Retry every 4 seconds
+            setTimeout(waitForRoundEnd, 4000);
         }
     } catch (error) {
         console.error("❌ Network error or timeout:", error);
-        setTimeout(waitForRoundEnd, 4000); // 🔄 Retry in case of network issues
+        setTimeout(waitForRoundEnd, 4000);
     }
 }
 
