@@ -242,6 +242,7 @@ async function waitForRoundEnd() {
 
         if (data.status === "round_finished" || data.status === "round_ended") {
             console.log("🎉 Round finished! Redirecting to results...");
+            sessionStorage.removeItem("hasPicked");
             window.location.href = "/pages/results.html";
         } else if (data.status === "finished") {
             console.log("🏆 Game finished! Redirecting to final results...");
