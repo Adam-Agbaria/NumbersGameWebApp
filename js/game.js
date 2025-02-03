@@ -97,22 +97,24 @@ async function submitNumber(playerNumber) {
         const data = await response.json();
         console.log("Response received:", data);
 
-        if (response.ok) {
-            console.log(`Number ${playerNumber} submitted successfully`);
-            hasPicked = true;
+    // ✅ Inside submitNumber(), call `waitForRoundEnd()`
+    if (response.ok) {
+        console.log(`Number ${playerNumber} submitted successfully`);
+        hasPicked = true;
 
-            // Disable input and button
-            document.getElementById("player-number").disabled = true;
-            document.getElementById("submit-number").disabled = true;
+        // Disable input and button
+        document.getElementById("player-number").disabled = true;
+        document.getElementById("submit-number").disabled = true;
 
-            // Show selection confirmation
-            document.querySelector(".container").innerHTML += `
-                <p class="selected-message">You selected: <strong>${playerNumber}</strong>. Waiting for the round to finish...</p>
-            `;
+        // Show selection confirmation
+        document.querySelector(".container").innerHTML += `
+            <p class="selected-message">You selected: <strong>${playerNumber}</strong>. Waiting for the round to finish...</p>
+        `;
 
-            // Wait for the round to end
-            waitForRoundEnd();
-        } else {
+        // ✅ Now we correctly call `waitForRoundEnd()`
+        waitForRoundEnd();
+    }
+ else {
             alert("Error submitting number: " + data.error);
         }
     } catch (error) {
@@ -215,6 +217,7 @@ async function fetchFinalWinner() {
     }
 }
 
+// ✅ Ensure this function is present
 async function waitForRoundEnd() {
     const gameId = sessionStorage.getItem("gameId");
 
@@ -225,24 +228,22 @@ async function waitForRoundEnd() {
         });
 
         const data = await response.json();
+        console.log("Game Status Response:", data);
 
         if (data.status === "round_finished") {
-            console.log("Round finished! Waiting 15s for results...");
-            setTimeout(() => {
-                window.location.href = "/pages/results.html";
-            }, 15000);
+            console.log("Round finished! Redirecting to results...");
+            window.location.href = "/pages/results.html";
             return;
         } else if (data.status === "finished") {
             console.log("Game finished! Redirecting to final results...");
-            setTimeout(() => {
-                window.location.href = "/pages/final.html";
-            }, 15000);
+            window.location.href = "/pages/final.html";
             return;
         }
     } catch (error) {
-        console.error("Error checking game status:", error);
+        console.error("❌ Error checking game status:", error);
     }
 
-    // ✅ Retry every 5 seconds until round ends
+    // 🔄 Retry every 4 seconds until round ends
     setTimeout(waitForRoundEnd, 5000);
 }
+
