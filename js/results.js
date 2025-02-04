@@ -91,8 +91,8 @@ async function fetchRoundResults() {
 
         // ✅ Fetch multiple winners
         const winners = roundResults.winners || [];
-        const rawAverage = roundResults.raw_average !== undefined ? roundResults.raw_average : "N/A"; // Raw average before multiplication
         const winningNumber = roundResults.winning_number !== undefined ? roundResults.winning_number : "N/A";
+        const rawAverage = winningNumber / 0.8; // Raw average before multiplication
 
         let winnerDetails = winners.map(winnerId => {
             const player = data.players[winnerId] || { name: `Unknown (${winnerId})`, number: "N/A" };
