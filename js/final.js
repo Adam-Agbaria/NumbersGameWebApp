@@ -34,11 +34,26 @@ async function fetchFinalWinner() {
         }
 
         const players = data.players || {};
+        const roundKeys = Object.keys(data.round_results).sort((a, b) => {
+            return parseInt(b.replace("Round ", "")) - parseInt(a.replace("Round ", ""));
+        });
+
+        // ✅ Get the last round's results
+        const latestRoundKey = roundKeys[0];
+        const finalRoundResults = data.round_results[latestRoundKey] || {};
+        const finalRoundWinners = finalRoundResults.winners || [];
+        const rawAverage = finalRoundResults.raw_average || "N/A";
+        const winningNumber = finalRoundResults.winning_number || "N/A";
+
+        let finalRoundWinnersHtml = finalRoundWinners.map(winnerId => {
+            const player = players[winnerId] || { name: `Unknown (${winnerId})`, number: "N/A" };
+            return `<li>🏆 <strong>${player.name}</strong> (Chose: ${player.number})</li>`;
+        }).join("");
 
         // ✅ Count how many rounds each player won
         const winCount = {};
         for (const roundKey in data.round_results) {
-            const roundWinners = data.round_results[roundKey].winners || []; // ✅ Now supports multiple winners per round
+            const roundWinners = data.round_results[roundKey].winners || [];
             roundWinners.forEach(winner => {
                 winCount[winner] = (winCount[winner] || 0) + 1;
             });
@@ -48,21 +63,34 @@ async function fetchFinalWinner() {
 
         // ✅ Find the maximum number of rounds won
         const maxWins = Math.max(...Object.values(winCount), 0);
-
-        // ✅ Get all players who have the highest win count
         const finalWinners = Object.entries(winCount).filter(([_, wins]) => wins === maxWins);
 
         console.log("🥇 Final Winners:", finalWinners);
 
-        let resultHtml = "<h2>🏆 Final Standings</h2><ul>";
-        finalWinners.forEach(([playerId, wins]) => {
+        let finalWinnersHtml = finalWinners.map(([playerId, wins]) => {
             const playerName = players[playerId]?.name || `Unknown Player (${playerId})`;
-            resultHtml += `<li>🥇 <strong>${playerName}</strong>: ${wins} rounds won</li>`;
-        });
-        resultHtml += "</ul>";
+            return `<li>🥇 <strong>${playerName}</strong>: ${wins} rounds won</li>`;
+        }).join("");
 
-        // ✅ Display final results
-        winnerElement.innerHTML = resultHtml;
+        let allPlayersResultsHtml = "<h2>📊 Game Summary</h2><ul>";
+        Object.entries(winCount).forEach(([playerId, wins]) => {
+            const playerName = players[playerId]?.name || `Unknown Player (${playerId})`;
+            allPlayersResultsHtml += `<li><strong>${playerName}</strong>: ${wins} rounds won</li>`;
+        });
+        allPlayersResultsHtml += "</ul>";
+
+        // ✅ Display final round results + full game results
+        winnerElement.innerHTML = `
+            <h2>🔥 Final Round Results</h2>
+            <p>📊 <strong>Average:</strong> ${rawAverage}</p>
+            <p>🎯 <strong>Winning Number:</strong> ${rawAverage} * 0.8 = ${winningNumber}</p>
+            <ul>${finalRoundWinnersHtml}</ul>
+
+            <h2>🏆 Final Standings</h2>
+            <ul>${finalWinnersHtml}</ul>
+
+            ${allPlayersResultsHtml} <!-- ✅ Shows how many rounds all players won -->
+        `;
 
     } catch (error) {
         console.error("❌ Error fetching final results:", error);

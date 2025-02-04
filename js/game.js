@@ -183,12 +183,8 @@ async function waitForRoundEnd() {
             sessionStorage.removeItem("hasPicked");
             window.location.href = "/pages/results.html";
         } else if (data.status === "finished") {
-   
-            console.log("🏆 Game finished! Displaying last round results...");
-                await fetchRoundResults();
-                setTimeout(() => {
-                    window.location.href = "/pages/final.html"; // ✅ Redirect to final results page
-                }, 10000); 
+            console.log("🏆 Game finished! Redirecting to final results...");
+            window.location.href = "/pages/final.html";
         } else {
             console.log("⏳ Round not finished yet. Checking again in 4s...");
             setTimeout(waitForRoundEnd, 4000);
