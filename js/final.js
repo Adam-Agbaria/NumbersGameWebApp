@@ -42,8 +42,10 @@ async function fetchFinalWinner() {
         const latestRoundKey = roundKeys[0];
         const finalRoundResults = data.round_results[latestRoundKey] || {};
         const finalRoundWinners = finalRoundResults.winners || [];
-        const rawAverage = finalRoundResults.raw_average || "N/A";
-        const winningNumber = finalRoundResults.winning_number || "N/A";
+
+        // ✅ Compute raw average from winning_number if missing
+        const rawAverage = finalRoundResults.winning_number ? (finalRoundResults.winning_number / 0.8).toFixed(2) : "N/A";
+        const winningNumber = finalRoundResults.winning_number !== undefined ? finalRoundResults.winning_number : "N/A";
 
         let finalRoundWinnersHtml = finalRoundWinners.map(winnerId => {
             const player = players[winnerId] || { name: `Unknown (${winnerId})`, number: "N/A" };
