@@ -72,12 +72,12 @@ async function fetchRoundResults() {
             return;
         }
 
-        // 🔥 Fix: Extract latest round from the keys like "Round 1", "Round 2"
+        // 🔥 Extract the latest round
         const roundKeys = Object.keys(data.round_results).sort((a, b) => {
             return parseInt(b.replace("Round ", "")) - parseInt(a.replace("Round ", ""));
         });
 
-        const latestRoundKey = roundKeys[0]; // ✅ Get the highest round (e.g., "Round 1")
+        const latestRoundKey = roundKeys[0]; // ✅ Get the highest round
 
         console.log(`✅ Latest round detected: ${latestRoundKey}`);
 
@@ -89,24 +89,20 @@ async function fetchRoundResults() {
             return;
         }
 
-        const winnerId = roundResults.winner || "Unknown";
+        // ✅ Fetch multiple winners
+        const winners = roundResults.winners || [];
         const winningNumber = roundResults.winning_number !== undefined ? roundResults.winning_number : "N/A";
-        const chosenNumber = roundResults.chosen_number || "N/A";
 
-        // ✅ FIX: Ensure `data.players` and `data.players[winnerId]` exist before accessing
-        let winnerPicked = "N/A";
-        let winnerName = "Unknown";
+        let winnerDetails = winners.map(winnerId => {
+            const player = data.players[winnerId] || { name: `Unknown (${winnerId})`, number: "N/A" };
+            return `<li>🏆 <strong>${player.name}</strong> (Chose: ${player.number})</li>`;
+        }).join("");
 
-        if (data.players && winnerId in data.players) {  // 🔥 Fix: Properly check if player exists
-            winnerPicked = data.players[winnerId].number || "N/A";
-            winnerName = data.players[winnerId].name || "Unknown";
-        }
-
+        // ✅ Display multiple winners
         document.getElementById("results").innerHTML = `
             <h2>${latestRoundKey} Results</h2>
-            <p>🏆 <strong>Winner:</strong> Player ${winnerName} (${winnerId})</p>
             <p>🎯 <strong>Winning Number:</strong> ${winningNumber}</p>
-            <p>🔢 <strong>Winner's Pick:</strong> ${winnerPicked}</p>
+            <ul>${winnerDetails}</ul>
         `;
 
     } catch (error) {
@@ -114,3 +110,4 @@ async function fetchRoundResults() {
         document.getElementById("results").innerHTML = "<p>Error loading results. Please try again.</p>";
     }
 }
+

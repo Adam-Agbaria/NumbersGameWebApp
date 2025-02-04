@@ -38,20 +38,23 @@ async function fetchFinalWinner() {
         // ✅ Count how many rounds each player won
         const winCount = {};
         for (const roundKey in data.round_results) {
-            const winner = data.round_results[roundKey].winner;
-            if (winner) {
+            const roundWinners = data.round_results[roundKey].winners || [];
+            roundWinners.forEach(winner => {
                 winCount[winner] = (winCount[winner] || 0) + 1;
-            }
+            });
         }
 
         // ✅ Sort players by most rounds won
         const sortedWinners = Object.entries(winCount).sort((a, b) => b[1] - a[1]);
 
+        // ✅ Find the highest number of wins
+        const maxWins = sortedWinners[0]?.[1] || 0;
+        const finalWinners = sortedWinners.filter(([_, wins]) => wins === maxWins);
+
         let resultHtml = "<h2>🏆 Final Standings</h2><ul>";
-        sortedWinners.forEach(([playerId, wins], index) => {
-            const playerName = players[playerId]?.name || `Unknown Player (${playerId})`; 
-            const rank = index === 0 ? "🥇" : index === 1 ? "🥈" : index === 2 ? "🥉" : "";
-            resultHtml += `<li>${rank} <strong>${playerName}</strong>: ${wins} round(s) won</li>`;
+        finalWinners.forEach(([playerId, wins], index) => {
+            const playerName = players[playerId]?.name || `Unknown Player (${playerId})`;
+            resultHtml += `<li>🥇 <strong>${playerName}</strong>: ${wins} rounds won</li>`;
         });
         resultHtml += "</ul>";
 
