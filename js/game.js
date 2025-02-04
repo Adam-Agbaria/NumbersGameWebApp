@@ -80,14 +80,23 @@ function startCountdown() {
 */
 
 // ✅ Submit number to backend and show confirmation
+// ✅ Submit number to backend and show confirmation
 document.getElementById("submit-number").addEventListener("click", () => {
-    const playerNumber = document.getElementById("player-number").value;
-    if (playerNumber !== "") {
-        submitNumber(playerNumber);
-    } else {
-        alert("Please pick a number between 0-100.");
+    const playerNumber = document.getElementById("player-number").value.trim();
+
+    if (!isValidNumber(playerNumber)) {
+        alert("Please enter a valid number between 0 and 100.");
+        return;
     }
+
+    submitNumber(parseFloat(playerNumber));
 });
+
+// ✅ Validate if the input is a number between 0 and 100
+function isValidNumber(value) {
+    const num = parseFloat(value);
+    return !isNaN(num) && num >= 0 && num <= 100;
+}
 
 async function submitNumber(playerNumber) {
     const gameId = sessionStorage.getItem("gameId");
@@ -144,6 +153,7 @@ async function submitNumber(playerNumber) {
         alert("Failed to submit number. Please try again.");
     }
 }
+
 
 
 
