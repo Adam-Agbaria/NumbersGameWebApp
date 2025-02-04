@@ -91,6 +91,7 @@ async function fetchRoundResults() {
 
         // ✅ Fetch multiple winners
         const winners = roundResults.winners || [];
+        const rawAverage = roundResults.raw_average !== undefined ? roundResults.raw_average : "N/A"; // Raw average before multiplication
         const winningNumber = roundResults.winning_number !== undefined ? roundResults.winning_number : "N/A";
 
         let winnerDetails = winners.map(winnerId => {
@@ -98,12 +99,14 @@ async function fetchRoundResults() {
             return `<li>🏆 <strong>${player.name}</strong> (Chose: ${player.number})</li>`;
         }).join("");
 
-        // ✅ Display multiple winners
+        // ✅ Display multiple winners + raw average + final winning number
         document.getElementById("results").innerHTML = `
-            <h2>${latestRoundKey} Results</h2>
-            <p>🎯 <strong>Winning Number:</strong> ${winningNumber}</p>
-            <ul>${winnerDetails}</ul>
+        <h2>${latestRoundKey} Results</h2>
+        <p>📊 <strong>Average:</strong> ${rawAverage}</p>
+        <p>🎯 <strong>Winning Number:</strong> ${rawAverage} x 0.8 = ${winningNumber}</p>
+        <ul>${winnerDetails}</ul>
         `;
+
 
     } catch (error) {
         console.error("❌ Error fetching round results:", error);
